@@ -45,30 +45,6 @@ class Bot < SlackRubyBot::Bot
     client.say(channel: data.channel, text: report)
   end
 
-  # command 'weather tomorrow' do |client, data, _match|
-  #   #for some reason class methods were giving me trouble so I duplicated this code. This code could also probably be written as a case statement or, better yet, a hash that maps cities to lat long OR, even better yet, a class that goes to an external API that will convert cities to lat/long combos. However, time was limited so I went with this
-  #   location = _match.to_s.split(" ")[3..-1].join(" ")
-  #   if location.downcase === "los angeles"
-  #     # weather_fetcher.coordinates = '34.0522,118.2437'
-  #     coordinates = '34.0522,118.2437'
-  #   elsif location.downcase === "chicago"
-  #     # weather_fetcher.coordinates = '41.8781,87.6298'
-  #     coordinates = '41.8781,87.6298'
-  #   elsif location.downcase === "random"
-  #     lat = -90.000 + Random.rand(90.000)
-  #     long = -180.000 + Random.rand(180.000)
-  #     # weather_fetcher.coordinates = lat.to_s+","+long.to_s
-  #     coordinates = lat.to_s+","+long.to_s
-  #   else
-  #     coordinates = '42.3601,-71.0589'
-  #     # weather_fetcher.coordinates = '42.3601,-71.0589'
-  #   end
-
-  #   time = (Time.now + 1.day).to_time.to_i
-  #   report = weather_fetcher.weather(time, coordinates)
-  #   client.say(channel: data.channel, text: report)
-  # end
-
 
   command 'whenever report' do |client, data, _match|
     #enter in a day, positive or negative, to see the weather on that day
