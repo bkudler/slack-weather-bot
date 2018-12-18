@@ -9,28 +9,25 @@ class DarksyWeatherFetcher
   attr_reader :time
 
   def initialize(args)
-    @url = args.fetch(:url, false)
-    @coordinates = args.fetch(:coordinates, '42.3601,-71.0589') 
     @weather_key = ENV["weather_key"]
-
   end
 
-  def get_weather
-    uri = "/"+@weather_key+"/" + self.coordinates
+  def get_weather(coordinates)
+    uri = "/"+@weather_key+"/" + coordinates
     self.class.get(uri,{query: {exclude:'minutely,hourly,daily,alerts,flags'}})
   end
 
-  def get_weather_time_machine(date)
-    uri = "/"+@weather_key+"/" + self.coordinates+","+date.to_s
+  def get_weather_time_machine(date, coordinates)
+    uri = "/"+@weather_key+"/" + coordinates+","+date.to_s
     self.class.get(uri,{query: {exclude:'minutely,hourly,daily,alerts,flags'}})
   end
 
-  def weather(time)
+  def weather(time, coordinates)
     if time === "today"
-      weather = JSON.parse(self.get_weather.body)["currently"]
+      weather = JSON.parse(self.get_weather(coordinates).body)["currently"]
       @time = "today"
     else
-      weather = JSON.parse(self.get_weather_time_machine(time).body)["currently"]
+      weather = JSON.parse(self.get_weather_time_machine(time, coordinates).body)["currently"]
       @time = Time.at(time).strftime("%m/%d/%Y")
     end
       weather_report(weather)

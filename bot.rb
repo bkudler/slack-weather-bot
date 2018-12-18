@@ -9,59 +9,74 @@ require 'slack-ruby-client'
 class Bot < SlackRubyBot::Bot
 
   api_key = ENV["weather_key"]
-  weather_fetcher = DarksyWeatherFetcher.new({url:"https://api.darksky.net/forecast/"+api_key+"/"
-  })
+  weather_fetcher = DarksyWeatherFetcher.new({})
 
 
-  command 'weather now' do |client, data, _match|
+  command 'weather' do |client, data, _match|
     #for some reason class methods were giving me trouble so I duplicated this code. This code could also probably be written as a case statement or, better yet, a hash that maps cities to lat long OR, even better yet, a class that goes to an external API that will convert cities to lat/long combos. However, time was limited so I went with this
+    if _match.to_s.split(" ").length <= 2
+      client.say(channel: data.channel, text: "sorry, say again?")
+      next
+    end
+
     location = _match.to_s.split(" ")[3..-1].join(" ")
     if location.downcase === "los angeles"
-      weather_fetcher.coordinates = '34.0522,118.2437'
+      # weather_fetcher.coordinates = '34.0522,118.2437'
+      coordinates = '34.0522,118.2437'
     elsif location.downcase === "chicago"
-      weather_fetcher.coordinates = '41.8781,87.6298'
+      # weather_fetcher.coordinates = '41.8781,87.6298'
+      coordinates = '41.8781,87.6298'
     elsif location.downcase === "random"
       lat = -90.000 + Random.rand(90.000)
       long = -180.000 + Random.rand(180.000)
-      weather_fetcher.coordinates = lat.to_s+","+long.to_s
+      # weather_fetcher.coordinates = lat.to_s+","+long.to_s
+      coordinates = lat.to_s+","+long.to_s
     else
-      weather_fetcher.coordinates = '42.3601,-71.0589'
+      coordinates = '42.3601,-71.0589'
+      # weather_fetcher.coordinates = '42.3601,-71.0589'
+    end
+    if _match.to_s.split(" ")[2] === "now" and _match.to_s.split(" ").length > 1
+      day = "today"
+    elsif _match.to_s.split(" ")[2] === "tomorrow" and _match.to_s.split(" ").length > 1
+      day = (Time.now + 1.day).to_time.to_i
     end
 
-
-    report = weather_fetcher.weather("today")
+    report = weather_fetcher.weather(day,coordinates)
     client.say(channel: data.channel, text: report)
   end
 
-  command 'weather tomorrow' do |client, data, _match|
-    #for some reason class methods were giving me trouble so I duplicated this code. This code could also probably be written as a case statement or, better yet, a hash that maps cities to lat long OR, even better yet, a class that goes to an external API that will convert cities to lat/long combos. However, time was limited so I went with this
-    location = _match.to_s.split(" ")[3..-1].join(" ")
-    if location.downcase === "los angeles"
-      weather_fetcher.coordinates = '34.0522,118.2437'
-    elsif location.downcase === "chicago"
-      weather_fetcher.coordinates = '41.8781,87.6298'
-    elsif location.downcase === "random"
-      lat = -90.000 + Random.rand(90.000)
-      long = -180.000 + Random.rand(180.000)
-      weather_fetcher.coordinates = lat.to_s+","+long.to_s
-    else
-      weather_fetcher.coordinates = '42.3601,-71.0589'
-    end
+  # command 'weather tomorrow' do |client, data, _match|
+  #   #for some reason class methods were giving me trouble so I duplicated this code. This code could also probably be written as a case statement or, better yet, a hash that maps cities to lat long OR, even better yet, a class that goes to an external API that will convert cities to lat/long combos. However, time was limited so I went with this
+  #   location = _match.to_s.split(" ")[3..-1].join(" ")
+  #   if location.downcase === "los angeles"
+  #     # weather_fetcher.coordinates = '34.0522,118.2437'
+  #     coordinates = '34.0522,118.2437'
+  #   elsif location.downcase === "chicago"
+  #     # weather_fetcher.coordinates = '41.8781,87.6298'
+  #     coordinates = '41.8781,87.6298'
+  #   elsif location.downcase === "random"
+  #     lat = -90.000 + Random.rand(90.000)
+  #     long = -180.000 + Random.rand(180.000)
+  #     # weather_fetcher.coordinates = lat.to_s+","+long.to_s
+  #     coordinates = lat.to_s+","+long.to_s
+  #   else
+  #     coordinates = '42.3601,-71.0589'
+  #     # weather_fetcher.coordinates = '42.3601,-71.0589'
+  #   end
+
+  #   time = (Time.now + 1.day).to_time.to_i
+  #   report = weather_fetcher.weather(time, coordinates)
+  #   client.say(channel: data.channel, text: report)
+  # end
 
 
-    time = (Time.now + 1.day).to_time.to_i
-    report = weather_fetcher.weather(time)
-    client.say(channel: data.channel, text: report)
-  end
-
-
-  command 'weather whenever' do |client, data, _match|
+  command 'whenever report' do |client, data, _match|
     #enter in a day, positive or negative, to see the weather on that day
     # e.g. 'weather whenever 50' shows the weather 50 days from now or 'weather whenever -30' shows the weather 30 days ago
     time = _match.to_s.split(" ")[-1..-1].join(" ")
-    if !!(time =~ /\A[-+]?[0-9]+\z/) and time.to_i < 90
+    if !!(time =~ /\A[-+]?[0-9]+\z/) and (time.to_i < 90 and time.to_i > -90)
       time = (Time.now + time.to_i.day).to_time.to_i
-      report = weather_fetcher.weather(time)
+      report = weather_fetcher.weather(time, '42.3601,-71.0589')
       client.say(channel: data.channel, text: report)
     else
       client.say(channel: data.channel, text: "sorry please make sure the last value is the number of days in the future or past you would like to see the weather for and is under 90 and greater than -90")
@@ -93,9 +108,9 @@ class WeatherDifferentPoster
   end
 
   def weather_different?
-   @weather_today = JSON.parse(@weather_fetcher.get_weather.body)["currently"]["temperature"].to_s
+   @weather_today = JSON.parse(@weather_fetcher.get_weather('42.3601,-71.0589').body)["currently"]["temperature"].to_s
    tomorrow = (Time.now - 1.day).to_time.to_i
-   @weather_yesterday = JSON.parse(@weather_fetcher.get_weather_time_machine(tomorrow).body)["currently"]["temperature"].to_s
+   @weather_yesterday = JSON.parse(@weather_fetcher.get_weather_time_machine(tomorrow,'42.3601,-71.0589').body)["currently"]["temperature"].to_s
     (@weather_today.to_f - @weather_yesterday.to_f).abs > 25
   end
 
