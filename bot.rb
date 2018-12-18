@@ -21,19 +21,15 @@ class Bot < SlackRubyBot::Bot
 
     location = _match.to_s.split(" ")[3..-1].join(" ")
     if location.downcase === "los angeles"
-      # weather_fetcher.coordinates = '34.0522,118.2437'
       coordinates = '34.0522,118.2437'
     elsif location.downcase === "chicago"
-      # weather_fetcher.coordinates = '41.8781,87.6298'
       coordinates = '41.8781,87.6298'
     elsif location.downcase === "random"
       lat = -90.000 + Random.rand(90.000)
       long = -180.000 + Random.rand(180.000)
-      # weather_fetcher.coordinates = lat.to_s+","+long.to_s
       coordinates = lat.to_s+","+long.to_s
     else
       coordinates = '42.3601,-71.0589'
-      # weather_fetcher.coordinates = '42.3601,-71.0589'
     end
     if _match.to_s.split(" ")[2] === "now" and _match.to_s.split(" ").length > 1
       day = "today"
