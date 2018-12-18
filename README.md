@@ -1,4 +1,4 @@
-#About
+# About
 
 The Slack Weather Bot is a Slack Bot that communicates the weather for a given day.
 
@@ -17,7 +17,7 @@ e.g 'whenever report 20' or 'whenever report -20'
 
 The bot will also report if the temperature today is 20 degrees different from the weather tomorrow
 
-#Install
+# Install
 
 clone this repository, get an API key for the darksy weather API and your slack bot
 create a .env file and load your keys into there
